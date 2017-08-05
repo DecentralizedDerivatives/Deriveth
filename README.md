@@ -11,7 +11,9 @@ Oracle Methodology can be found at:
 
 
 
-Documentation is noted in three ways:  From the Remix Solidity Browser,  From the Node.js commmand line, and from the mist wallet.
+Documentation is noted in three ways:  From the Remix Solidity Browser,  From the Node.js commmand line, and from the mist wallet.  
+
+Detailed technical documentation can be found at: https://readthedocs.org/projects/deriveth/ 
 
 For a non-technical overview of the product, please see the Whitepaper:https://github.com/DecentralizedDerivatives/Deriveth/wiki/Whitepaper 
 
