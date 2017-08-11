@@ -1,6 +1,7 @@
 # Deriveth
 Deriveth is a Customized Derivatives Contract based on the Decentralized Derivatives Oracles.
 The following contracts and products are available on the Ropsten test network.
+Join us on our slack: https://deriveth.slack.com/
 
 ETH/USD:
 
