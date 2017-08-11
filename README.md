@@ -4,7 +4,7 @@ The following contracts and products are available on the Ropsten test network.
 
 Join us on our slack: https://deriveth.slack.com/
 
-Or on Gitter: gitter.im/deriveth
+Or on Gitter: https://gitter.im/deriveth
 
 ETH/USD:
 
