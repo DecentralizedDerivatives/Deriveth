@@ -108,8 +108,8 @@ Oracle d;
           
           else if (p1 > 1000){
                if(mul(sub(p1,1000),1000000000000000000)>smargin){shares[2] = 0; shares[1] =this.balance;}
-               else {shares[2] = mul(mul(sub(1000,p1),notional),div(1000000000000000000,1000));
-               shares[1] = this.balance - mul(shares[2],div(1000000000000000000,1000));
+               else {shares[2] = mul(mul(sub(p1,1000),notional),div(1000000000000000000,1000));
+               shares[1] = this.balance - shares[2];
                }
           }
       currentState = SwapState.ready;
