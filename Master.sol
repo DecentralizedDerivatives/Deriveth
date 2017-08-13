@@ -101,14 +101,16 @@ Oracle d;
         }
           if (p1<1000){
               if(mul(sub(1000,p1),1000000000000000000)>lmargin){shares[1] = 0; shares[2] =this.balance;}
-              shares[1] = mul(mul(sub(1000,p1),notional),div(1000000000000000000,1000));
+              else {shares[1] = mul(mul(sub(1000,p1),notional),div(1000000000000000000,1000));
               shares[2] = this.balance -  shares[1];
+              }
           }
           
           else if (p1 > 1000){
                if(mul(sub(p1,1000),1000000000000000000)>smargin){shares[2] = 0; shares[1] =this.balance;}
-               shares[2] = mul(mul(sub(1000,p1),notional),div(1000000000000000000,1000));
+               else {shares[2] = mul(mul(sub(1000,p1),notional),div(1000000000000000000,1000));
                shares[1] = this.balance - mul(shares[2],div(1000000000000000000,1000));
+               }
           }
       currentState = SwapState.ready;
     return true;
