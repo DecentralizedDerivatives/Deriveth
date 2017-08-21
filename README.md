@@ -33,27 +33,27 @@ For a non-technical overview of the product, please see the Whitepaper:https://g
 
 Remix:
 
-Factory - AtAddress("0x...")
-  Enter .01 as value
-  · Click Factory.CreateContract
-  · Copy Returned Address (you're new Swap!)
-  
-  
-Swap - At address and enter the newly created Swap contract (e.g. 0x35d6a51eee77422820dcc7c51ab9148899a24daf  ) (note no quotation)
-· enter margin value (e.g. 100 eth)
-· Swap.createContract (ECP,margin,margin2,notional,long,startDate,endDate,cancellable) - 
-    (e.g. true,100, 100, 1000, true, 20170701, 20170703)
-    
-You're swap is now created!  Now you need a counterpary.  To incentivize counterparties, reduce Margin2 relative to margin
+      Factory - AtAddress("0x...")
+        Enter .01 as value
+        · Click Factory.CreateContract
+        · Copy Returned Address (you're new Swap!)
 
-  To enter as counterparty:
-  · Find swap at addresss like above
-  · enter margin2 value (e.g. 100 eth)
-  · Swap.EnterSwap (ECP) - (e.g. true)
-  
-Once the enddate has past:
-  · One party needs to click Swap.Calculate()  (check currentState to see if this has been done (will be 2 once done))
-  · Each party can now click Swap.PaySwap() to retrieve their payout
+
+      Swap - At address and enter the newly created Swap contract (e.g. 0x35d6a51eee77422820dcc7c51ab9148899a24daf  ) (note no quotation)
+      · enter margin value (e.g. 100 eth)
+      · Swap.createContract (ECP,margin,margin2,notional,long,startDate,endDate,cancellable) - 
+          (e.g. true,100, 100, 1000, true, 20170701, 20170703)
+
+      You're swap is now created!  Now you need a counterpary.  To incentivize counterparties, reduce Margin2 relative to margin
+
+        To enter as counterparty:
+        · Find swap at addresss like above
+        · enter margin2 value (e.g. 100 eth)
+        · Swap.EnterSwap (ECP) - (e.g. true)
+
+      Once the enddate has past:
+        · One party needs to click Swap.Calculate()  (check currentState to see if this has been done (will be 2 once done))
+        · Each party can now click Swap.PaySwap() to retrieve their payout
   
 
 
