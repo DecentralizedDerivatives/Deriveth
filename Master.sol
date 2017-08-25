@@ -6,6 +6,7 @@ contract Factory {
     address[] public newContracts;
     address public creator;
     address public oracleID;
+    uint public fee;
     modifier onlyOwner{require(msg.sender == creator); _;}
     event Print(address _name, address _value);
 
@@ -13,9 +14,13 @@ contract Factory {
         creator = msg.sender;  
         oracleID = _oracleID;
     }
+    /*ie .01 ether = 10000000000000000 */
+    function setFee(uint _fee) onlyOwner{
+      fee = _fee;
+    }
 
     function createContract () payable returns (address){
-        require(msg.value >= .01 * 1000000000000000000);
+        require(msg.value >= fee);
         address newContract = new Swap(oracleID,msg.sender,creator);
         newContracts.push(newContract);
         Print(msg.sender,newContract);
@@ -115,6 +120,8 @@ Oracle d;
       currentState = SwapState.ready;
     return true;
   }
+  
+
 
   function PaySwap() onlyState(SwapState.ready) returns (bool){
   if (msg.sender == long_party && paid[long_party] == false){
@@ -159,9 +166,31 @@ Oracle d;
   function RetrieveData(bytes32 key) public constant returns(uint) {
     DocumentStruct memory doc;
     (doc.name,doc.value) = d.documentStructs(key);
+    assert(utfLength(doc.name) > 0);
     return doc.value;
   }
 
+
+    function utfLength(bytes str) constant returns (uint length)
+    {
+        uint i=0;
+        bytes memory string_rep = str;
+        while (i<string_rep.length)
+        {
+            if (string_rep[i]>>7==0)
+                i+=1;
+            else if (string_rep[i]>>5==0x6)
+                i+=2;
+            else if (string_rep[i]>>4==0xE)
+                i+=3;
+            else if (string_rep[i]>>3==0x1E)
+                i+=4;
+            else
+                //For safety
+                i+=1;
+            length++;
+        }
+    }
   function mul(uint256 a, uint256 b) internal returns (uint256) {
     uint256 c = a * b;
     assert(a == 0 || c / a == b);
@@ -203,9 +232,11 @@ contract Oracle{
         Print(bytes32ToString(name),value);
         return true;
     }
+    
 
     function RetrieveData(bytes32 key) public constant returns(uint) {
-        var d = documentStructs[key].value;
+        uint d = documentStructs[key].value;
+        bytes32 e = documentStructs[key].name;
         return d;
     }
       function RetrieveName(bytes32 key) public constant returns(string) {
