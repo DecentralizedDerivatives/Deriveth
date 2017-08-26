@@ -58,7 +58,49 @@ Remix:
 
 
 Node.js:
+             //Note this needs work
 
+            const fs = require('fs');
+            const solc = require('solc');
+            const Web3 = require('web3');
+
+            var account1 = "0.....";  (this is your address)
+            var key2 = new Buffer('f47e6311420a4fc5e900cb9aebec5387b7b56228bbeb887b7de424fxxxxxxxxx, 'hex') /*this is your private key*/
+            web3.eth.defaultAccount = account1
+
+            // Connect to local Ethereum node
+            const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+            // Compile the source code
+            const input = fs.readFileSync('Master.sol');
+            const output = solc.compile(input.toString(), 1);
+
+            //To create a contract
+            const bytecode = output.contracts['Factory'].bytecode;
+            const abi = JSON.parse(output.contracts['Factory'].interface);
+
+            var fContract = web3.eth.contract(abi)
+            var fInstance = fContract.at('0x......')
+            fInstance.createContract({value:web3.toWei('.01', 'ether') margin, gas: 3000000})
+
+            //To interact with Swap
+            const bytecode = output.contracts['Swap'].bytecode;
+            const abi = JSON.parse(output.contracts['Swap'].interface);
+            var sContract = web3.eth.contract(abi)
+            var sInstance = sContract.at('0x......')
+
+            //To create swap
+            sInstance.CreateSwap(true,100, 100, 1000, true, web3..fromAscii("20170714"),web3..fromAscii("20170717"),{value:web3.toWei('100', 'ether') gas: 3000000});
+
+
+            //To view details and enter a swap
+             console.log('Notional-', sInstance.notional.call().toNumber(), ' Long-',sInstance.long.call(),' Margin1-',sInstance.margin1.call().toNumber(),' Margin2-',sInstance.margin2.call().toNumber(),' StartDate-,web3..toAscii(sInstance.startDate.call()),' endDate-',web3..toAscii(sInstance.endDate.call()));
+
+            sContractInstance.EnterSwap(true{value:web3.toWei('100', 'ether') ,gas: 3000000});
+
+            //Then calculate and Pay
+            sInstance.Caluclate({gas: 3000000});
+            sInstance.PaySwap({gas: 3000000});
 
 
 
