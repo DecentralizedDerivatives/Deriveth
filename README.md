@@ -105,4 +105,33 @@ Node.js:
 
 
 
-Mist Wallet:
+MyEther Wallet:
+
+Download and install metamask: https://metamask.io/
+
+Go to: https://www.myetherwallet.com/#contracts  
+
+Enter in contract Address from above.  
+
+Enter bytecode (list can be found here)
+
+Click create contract and get address
+      To get address, view transaction on Etherscan.io
+      Click the 'Internal Transactions' tab
+      The 'To' field is your new contract address
+
+............
+/*To enter open / create new contract*/
+
+Enter in Swap Address
+Enter bytecode 
+Click 'Create Swap'
+Enter in details and submit
+
+............
+/* To pay */
+
+Enter Swap Address
+Etner bytecode 
+Click 'Calculate'
+Click 'Pay Swap'
