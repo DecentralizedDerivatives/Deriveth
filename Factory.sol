@@ -1,6 +1,7 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.13;
 
 import "../contracts/Swap.sol";
+
 
 contract Factory {
     address[] public newContracts;
@@ -14,9 +15,9 @@ contract Factory {
         creator = msg.sender;  
         oracleID = _oracleID;
     }
-    /*ie .01 ether = 10000000000000000 */
+    /*ie .01 ether = 1000 */
     function setFee(uint _fee) onlyOwner{
-      fee = _fee;
+      fee = _fee *10000000000000;
     }
 
     function createContract () payable returns (address){
