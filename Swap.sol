@@ -1,9 +1,9 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.13;
 
 import "../contracts/Oracle.sol";
 
 contract Swap {
-  enum SwapState {open,started,ready,ended}
+  enum SwapState {created,open,started,ready,ended}
   SwapState public currentState;
   address public long_party;
   address public short_party;
@@ -29,10 +29,11 @@ Oracle d;
       oracleID = OAddress;
       creator = _creator;
       party = _cpty1;
+      currentState = SwapState.created;
     
   }
   
-  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate) payable {
+  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate) onlyState(SwapState.created) payable {
       require(ECP);
       require (msg.sender == party);
       require(msg.value == mul(_margin,1000000000000000000));
@@ -51,13 +52,16 @@ Oracle d;
       startDate = _startDate;
   }
   mapping(address => bool) paid;
-  function EnterSwap(bool ECP) onlyState(SwapState.open) payable returns (bool) {
+  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate ) onlyState(SwapState.open) payable returns (bool) {
       require(ECP);
+      require(_long == long && notional == _notional && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
       require(msg.value >= smargin);
+      require(lmargin >= _margin);
       }
       else {long_party = msg.sender;
       require(msg.value >=lmargin);
+      require (smargin >= _margin);
       }
       currentState = SwapState.started;
       paid[long_party] = false;
@@ -106,15 +110,22 @@ Oracle d;
 
   function Exit(){
     require(currentState != SwapState.ended);
+    require(currentState != SwapState.created);
     if (currentState == SwapState.open){
-    if (msg.sender == party) selfdestruct(party);
+    if (msg.sender == party) {
+        lmargin = 0;
+        smargin = 0;
+        notional = 0;
+        currentState = SwapState.created;
+        msg.sender.send(this.balance);
+        }
     }
 
-  else if (currentState == SwapState.started){
+  else{
     var c = msg.sender == long_party ? 1 : 0;
-    var d = msg.sender == short_party ? 2 : 0;
-    var e = cancel + c + d;
-    cancel = c + d;
+    var f = msg.sender == short_party ? 2 : 0;
+    var e = cancel + c + f;
+    cancel = c + f;
     if (e > 2){
       if (msg.sender == short_party){ 
         long_party.send(lmargin);
@@ -136,46 +147,11 @@ Oracle d;
   function RetrieveData(bytes32 key) public constant returns(uint) {
     DocumentStruct memory doc;
     (doc.name,doc.value) = d.documentStructs(key);
-    assert(utfStringLength(bytes32ToString(doc.name)) > 0);
+    require(doc.value>0);
     return doc.value;
   }
   
-   function bytes32ToString(bytes32 x) constant returns (string) {
-    bytes memory bytesString = new bytes(32);
-    uint charCount = 0;
-    for (uint j = 0; j < 32; j++) {
-        byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
-        if (char != 0) {
-            bytesString[charCount] = char;
-            charCount++;
-        }
-    }
-      }
-
-
-    function utfStringLength(string str) constant
-    returns (uint length)
-    {
-        uint i=0;
-        bytes memory string_rep = bytes(str);
-
-        while (i<string_rep.length)
-        {
-            if (string_rep[i]>>7==0)
-                i+=1;
-            else if (string_rep[i]>>5==0x6)
-                i+=2;
-            else if (string_rep[i]>>4==0xE)
-                i+=3;
-            else if (string_rep[i]>>3==0x1E)
-                i+=4;
-            else
-                //For safety
-                i+=1;
-
-            length++;
-        }
-    }
+  
     
   function mul(uint256 a, uint256 b) internal returns (uint256) {
     uint256 c = a * b;
@@ -191,13 +167,3 @@ Oracle d;
   }
 
   function sub(uint256 a, uint256 b) internal returns (uint256) {
-    assert(b <= a);
-    return a - b;
-  }
-
-  function add(uint256 a, uint256 b) internal returns (uint256) {
-    uint256 c = a + b;
-    assert(c >= a);
-    return c;
-  }
-}
