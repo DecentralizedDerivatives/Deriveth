@@ -33,11 +33,24 @@ For a non-technical overview of the product, please see the Whitepaper:https://g
 
 Remix:
 
+Go to the remix browser at:
+
+Paste the following into the code field:
+      
+      pragma solidity ^0.4.13;
+      import "https://github.com/DecentralizedDerivates/Deriveth/Master.sol";
+
+Now follow the instructions for each part:
+
+
+To create a swap
+
       Factory - AtAddress("0x...")
         Enter .01 as value
         · Click Factory.CreateContract
         · Copy Returned Address (you're new Swap!)
 
+To enter in details:
 
       Swap - At address and enter the newly created Swap contract (e.g. 0x35d6a51eee77422820dcc7c51ab9148899a24daf  ) (note no quotation)
       · enter margin value (e.g. 100 eth)
@@ -46,12 +59,16 @@ Remix:
 
       You're swap is now created!  Now you need a counterpary.  To incentivize counterparties, reduce Margin2 relative to margin
 
-        To enter as counterparty:
+To enter as counterparty:
+
         · Find swap at addresss like above
         · enter margin2 value (e.g. 100 eth)
         · Swap.EnterSwap (ECP) - (e.g. true)
 
-      Once the enddate has past:
+To calculate/pay Swap:
+
+
+        Once the enddate has past:
         · One party needs to click Swap.Calculate()  (check currentState to see if this has been done (will be 2 once done))
         · Each party can now click Swap.PaySwap() to retrieve their payout
   
