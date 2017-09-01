@@ -1,4 +1,5 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.13;
+
 
 contract Oracle{
     address private owner;
