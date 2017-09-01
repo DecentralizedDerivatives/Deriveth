@@ -14,9 +14,9 @@ contract Factory {
         creator = msg.sender;  
         oracleID = _oracleID;
     }
-    /*ie .01 ether = 10000000000000000 */
+    /*ie .01 ether = 1000 */
     function setFee(uint _fee) onlyOwner{
-      fee = _fee;
+      fee = _fee *10000000000000;
     }
 
     function createContract () payable returns (address){
@@ -33,7 +33,7 @@ contract Factory {
 
 
 contract Swap {
-  enum SwapState {open,started,ready,ended}
+  enum SwapState {created,open,started,ready,ended}
   SwapState public currentState;
   address public long_party;
   address public short_party;
@@ -59,10 +59,11 @@ Oracle d;
       oracleID = OAddress;
       creator = _creator;
       party = _cpty1;
+      currentState = SwapState.created;
     
   }
   
-  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate) payable {
+  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate) onlyState(SwapState.created) payable {
       require(ECP);
       require (msg.sender == party);
       require(msg.value == mul(_margin,1000000000000000000));
@@ -81,13 +82,16 @@ Oracle d;
       startDate = _startDate;
   }
   mapping(address => bool) paid;
-  function EnterSwap(bool ECP) onlyState(SwapState.open) payable returns (bool) {
+  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate ) onlyState(SwapState.open) payable returns (bool) {
       require(ECP);
+      require(_long == long && notional == _notional && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
       require(msg.value >= smargin);
+      require(lmargin >= _margin);
       }
       else {long_party = msg.sender;
       require(msg.value >=lmargin);
+      require (smargin >= _margin);
       }
       currentState = SwapState.started;
       paid[long_party] = false;
@@ -136,15 +140,22 @@ Oracle d;
 
   function Exit(){
     require(currentState != SwapState.ended);
+    require(currentState != SwapState.created);
     if (currentState == SwapState.open){
-    if (msg.sender == party) selfdestruct(party);
+    if (msg.sender == party) {
+        lmargin = 0;
+        smargin = 0;
+        notional = 0;
+        currentState = SwapState.created;
+        msg.sender.send(this.balance);
+        }
     }
 
-  else if (currentState == SwapState.started){
+  else{
     var c = msg.sender == long_party ? 1 : 0;
-    var d = msg.sender == short_party ? 2 : 0;
-    var e = cancel + c + d;
-    cancel = c + d;
+    var f = msg.sender == short_party ? 2 : 0;
+    var e = cancel + c + f;
+    cancel = c + f;
     if (e > 2){
       if (msg.sender == short_party){ 
         long_party.send(lmargin);
@@ -166,31 +177,12 @@ Oracle d;
   function RetrieveData(bytes32 key) public constant returns(uint) {
     DocumentStruct memory doc;
     (doc.name,doc.value) = d.documentStructs(key);
-    assert(utfLength(doc.name) > 0);
+    require(doc.value>0);
     return doc.value;
   }
-
-
-    function utfLength(bytes str) constant returns (uint length)
-    {
-        uint i=0;
-        bytes memory string_rep = str;
-        while (i<string_rep.length)
-        {
-            if (string_rep[i]>>7==0)
-                i+=1;
-            else if (string_rep[i]>>5==0x6)
-                i+=2;
-            else if (string_rep[i]>>4==0xE)
-                i+=3;
-            else if (string_rep[i]>>3==0x1E)
-                i+=4;
-            else
-                //For safety
-                i+=1;
-            length++;
-        }
-    }
+  
+  
+    
   function mul(uint256 a, uint256 b) internal returns (uint256) {
     uint256 c = a * b;
     assert(a == 0 || c / a == b);
@@ -236,7 +228,6 @@ contract Oracle{
 
     function RetrieveData(bytes32 key) public constant returns(uint) {
         uint d = documentStructs[key].value;
-        bytes32 e = documentStructs[key].name;
         return d;
     }
       function RetrieveName(bytes32 key) public constant returns(string) {
