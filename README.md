@@ -32,13 +32,16 @@ For a non-technical overview of the product, please see the Whitepaper:https://g
 
 
 Remix:
+Before you can use the Remix browser, you'll need to download metamask here: https://metamask.io/  
 
-Go to the remix browser at:
+For now, you'll need to connect to the Ropsten test network until the contracts are out of Beta.  In order to get Ropsten testnet Ether, you can email info@decentralizedderivatives.org with your Ropsten address.  The Reddit/r/ethdev also gives out Ropsten for a different route: https://www.reddit.com/r/ethdev/comments/61zdn8/if_you_need_some_ropsten_testnet_ethers/ .
 
-Paste the following into the code field:
+Once you have metamask with Ether, go to the remix browser at:https://ethereum.github.io/browser-solidity/  
+
+Paste the following into the code field (delete everything else):
       
       pragma solidity ^0.4.13;
-      import "https://github.com/DecentralizedDerivates/Deriveth/Master.sol";
+      import "https://github.com/DecentralizedDerivates/Deriveth/Factory.sol";
 
 Now follow the instructions for each part:
 
@@ -50,24 +53,31 @@ To create a swap
         · Click Factory.CreateContract
         · Copy Returned Address (you're new Swap!)
 
-To enter in details:
+To enter in details of your purchased contract:
 
       Swap - At address and enter the newly created Swap contract (e.g. 0x35d6a51eee77422820dcc7c51ab9148899a24daf  ) (note no quotation)
       · enter margin value (e.g. 100 eth)
+      
+      To calculate the date, you will need convert the date to hex.  Say you wanted July 20th 2017 to be the start date and July 27th 2017 to be the end date.  Go to a string to hex converter (https://codebeautify.org/string-hex-converter) and type in the firsts date in the YYYYMMDD format.  20170720  and get the result (3230313730373230).  Add a 0x to the front, and this is your start date.  Do this for the end Date as well.
+      
       · Swap.createContract (ECP,margin,margin2,notional,long,startDate,endDate,cancellable) - 
-          (e.g. true,100, 100, 1000, true, 20170701, 20170703)
+          (e.g. true,100, 100, 1000, true, 0x3230313730373230, 0x3230313730373237)
 
       You're swap is now created!  Now you need a counterpary.  To incentivize counterparties, reduce Margin2 relative to margin
 
+To modify:
+
+      Swap - At address and enter the newly created Swap contract (e.g. 0x35d6a51eee77422820dcc7c51ab9148899a24daf  ) (note no quotation)
+      · click exit
+      -now you can re-enter your details
+      
 To enter as counterparty:
 
         · Find swap at addresss like above
         · enter margin2 value (e.g. 100 eth)
-        · Swap.EnterSwap (ECP) - (e.g. true)
+        · Enter swap with details of swap (besides your margin2 value ) Swap.EnterSwap (ECP,margin,notional,long,startDate,endDate,cancellable) - (e.g. true,100, 1000, true,  0x3230313730373230, 0x3230313730373237)
 
 To calculate/pay Swap:
-
-
         Once the enddate has past:
         · One party needs to click Swap.Calculate()  (check currentState to see if this has been done (will be 2 once done))
         · Each party can now click Swap.PaySwap() to retrieve their payout
