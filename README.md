@@ -140,10 +140,13 @@ MyEther Wallet:
 
       Enter in contract Address from above.  
 
-      Enter bytecode (list can be found here)
+      Enter abi ---  [{"constant":true,"inputs":[],"name":"creator","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"createContract","outputs":[{"name":"","type":"address"}],"payable":true,"type":"function"},{"constant":false,"inputs":[{"name":"_fee","type":"uint256"}],"name":"setFee","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"newContracts","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"fee","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"withdrawFee","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"oracleID","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"inputs":[{"name":"_oracleID","type":"address"}],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"_name","type":"address"},{"indexed":false,"name":"_value","type":"address"}],"name":"Print","type":"event"}]
 
-      Click create contract and get address
-            To get address, view transaction on Etherscan.io
+      Click create contract and click 'Metamask/Mist' option
+      Click connect to metamask and write
+      Type in fee (.01), and then click to make transaction.
+      Grab transaction hash, or get it from your metamask transactions
+      To get address, view transaction on Etherscan.io
             Click the 'Internal Transactions' tab
             The 'To' field is your new contract address
 
@@ -151,14 +154,14 @@ MyEther Wallet:
       /*To enter open / create new contract*/
 
       Enter in Swap Address
-      Enter bytecode 
+      Enter abi (found here)
       Click 'Create Swap'
-      Enter in details and submit
+      Enter in details and then submit
 
       ............
       /* To pay */
 
       Enter Swap Address
-      Etner bytecode 
+      Etner abi (found here) 
       Click 'Calculate'
       Click 'Pay Swap'
