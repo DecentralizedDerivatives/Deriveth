@@ -88,28 +88,50 @@ Node.js:
 
              //Note this needs work
 
+            const Web3 = require("web3");
             const fs = require('fs');
-            const solc = require('solc');
-            const Web3 = require('web3');
+            const Tx = require('ethereumjs-tx')
+            const web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io"));
+       //Now go get the factory ABI
+            var abi = swap ABI 
+            var contractAddress ="0x8d3cbc2cba343b97f656428eafa857ee01bda53b";
+            var _ = require('lodash');
+            var SolidityFunction = require('web3/lib/web3/function');
+            var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'createContract' }), '');
+            var account1= "0xE5078b80b08bD7036fc0f7973f667b6aa9B4ddBE";
+            var key1 = new Buffer('d941dcf24a8841fda45f3b0e52d2987a1f9131233caa3a0566b0c91910af85af', 'hex');
 
-            var account1 = "0.....";  (this is your address)
-            var key2 = new Buffer('f47e6311420a4fc5e900cb9aebec5387b7b56228bbeb887b7de424fxxxxxxxxx, 'hex') /*this is your private key*/
-            web3.eth.defaultAccount = account1
+            var gasLimitHex = web3.toHex(3000000);
 
-            // Connect to local Ethereum node
-            const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+            var numbernon=  web3.eth.getTransactionCount(account1) ;
+            var nonceHex = web3.toHex(numbernon);
+            var payloadData = solidityFunction.toPayload([]).data;
 
-            // Compile the source code
-            const input = fs.readFileSync('Master.sol');
-            const output = solc.compile(input.toString(), 1);
+            var rawTx = {
+                nonce: nonceHex,
+                gasPrice: "0x04e3b29200",
+                gasLimit: gasLimitHex,
+                to:contractAddress,
+                value: web3.toHex(web3.toWei('.01', 'ether')),
+                data: payloadData,
+                chainId:3
+            };
+            
+            var tx = new Tx(rawTx);
+            tx.sign(key1);
 
-            //To create a contract
-            const bytecode = output.contracts['Factory'].bytecode;
-            const abi = JSON.parse(output.contracts['Factory'].interface);
+            var serializedTx = tx.serialize();
 
-            var fContract = web3.eth.contract(abi)
-            var fInstance = fContract.at('0x......')
-            fInstance.createContract({value:web3.toWei('.01', 'ether') margin, gas: 3000000})
+            web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+                if (err) {
+                    console.log('send raw Error:');
+                    console.log(err);
+                }
+                else {
+                    console.log('Transaction receipt hash pending');
+                    console.log(hash);
+                }
+            });
 
             //To interact with Swap
             const bytecode = output.contracts['Swap'].bytecode;
