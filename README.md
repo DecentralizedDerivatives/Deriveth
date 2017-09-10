@@ -28,7 +28,7 @@ Documentation is noted in three ways:  From the Remix Solidity Browser,  From th
 
 Detailed technical documentation can be found at: https://readthedocs.org/projects/deriveth/ 
 
-For a non-technical overview of the product, please see the Whitepaper:https://github.com/DecentralizedDerivatives/Deriveth/wiki/Whitepaper 
+For a non-technical overview of the product, please see the Whitepaper: https://docs.wixstatic.com/ugd/cd991f_7d5a46584fb046618428465c02fde738.pdf 
 
 
 Remix:
