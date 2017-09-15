@@ -1,6 +1,8 @@
 pragma solidity ^0.4.13;
 
 
+//The oracle contract.  Detailed methodology on the Oracle can be found at Github.com/DecentralizedDerivatives/Oracles
+//The Oracle is a database with price of the underlying by date (key)
 contract Oracle{
     address private owner;
     event Print(string _name, uint _value);
