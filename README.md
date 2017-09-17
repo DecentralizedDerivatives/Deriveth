@@ -14,9 +14,9 @@ Mainnet:
       BTC/USD:
 Ropsten:
 
-      ETH/USD:0xc78fe159230e4bab28c3f7cba53967e0be3ee48e
+      ETH/USD:
 
-      BTC/USD:0x30346e7efc7b892c29989ce4374fc1af55acc8c3
+      BTC/USD:0x3c9294d257c106a8b2eb3e3a2d9199b8cd78a9b7
 
 
 
