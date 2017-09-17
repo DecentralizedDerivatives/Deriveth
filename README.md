@@ -91,13 +91,15 @@ Node.js:
             const Tx = require('ethereumjs-tx')
             const web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io"));
        //Now go get the factory ABI
-            var abi = swap ABI 
+            var abi = factory ABI (https://github.com/DecentralizedDerivatives/Deriveth/blob/master/abi)
             var contractAddress ="0x8d3cbc2cba343b97f656428eafa857ee01bda53b";
             var _ = require('lodash');
             var SolidityFunction = require('web3/lib/web3/function');
             var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'createContract' }), '');
             var account1= "0xE5078b80b08bD7036fc0f7973f667b6aa9B4ddBE";
             var key1 = new Buffer('d941dcf24a8841fda45f3b0e52d2987a1f9131233caa3a0566b0c91910af85af', 'hex');
+            var account2 = "0x939DD3E2DE8f472573364B3df1337857E758d90D"
+            var key2 = new Buffer('f47e6311420a4fc5e900cb9aebec5387b7b56228bbeb887b7de424f8af9b1a74', 'hex');
 
             var gasLimitHex = web3.toHex(3000000);
 
@@ -107,7 +109,7 @@ Node.js:
 
             var rawTx = {
                 nonce: nonceHex,
-                gasPrice: "0x04e3b29200",
+                gasPrice: "0x04e3b29200", //this is a hack to get around issues on Ropsten via Infura
                 gasLimit: gasLimitHex,
                 to:contractAddress,
                 value: web3.toHex(web3.toWei('.01', 'ether')),
@@ -132,24 +134,75 @@ Node.js:
             });
 
             //To interact with Swap
-            const bytecode = output.contracts['Swap'].bytecode;
-            const abi = JSON.parse(output.contracts['Swap'].interface);
-            var sContract = web3.eth.contract(abi)
-            var sInstance = sContract.at('0x......')
+            var abi = swapAbi
+            var sContract = web3.eth.contract(abi);
+            var contractAddress = "0xBd47D26065E97Cd8Db600687c64747efFB473c9A";
+            var sInstance = sContract.at(contractAddress)
 
             //To create swap
-            sInstance.CreateSwap(true,100, 100, 1000, true, web3..fromAscii("20170714"),web3..fromAscii("20170717"),{value:web3.toWei('100', 'ether') gas: 3000000});
+            var SolidityFunction = require('web3/lib/web3/function');
+            var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'CreateSwap' }), '');
+            
+            var gasLimitHex = web3.toHex(3000000);
 
+            var numbernon=  web3.eth.getTransactionCount(account1) ;
+            var nonceHex = web3.toHex(numbernon);
+            var payloadData = solidityFunction.toPayload([true,1, 1, 10, true, web3.fromAscii("20170714"),web3.fromAscii("20170717")]).data;
+            //gasPrice is a hack to get around issues on Ropsten via Infura
+            var rawTx = {
+                nonce: nonceHex,
+                gasPrice: "0x04e3b29200", 
+                gasLimit: gasLimitHex,
+                to:contractAddress,
+                value: web3.toHex(web3.toWei('1', 'ether')),
+                data: payloadData,
+                chainId:3
+            };
+            
+            var tx = new Tx(rawTx);
+            tx.sign(key1);
+            var serializedTx = tx.serialize();
+            web3.eth.sendRawTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+                if (err) {
+                    console.log('send raw Error:');
+                    console.log(err);
+                }
+                else {
+                    console.log('Transaction receipt hash pending');
+                    console.log(hash);
+                }
+            });
+            
 
             //To view details and enter a swap
-             console.log('Notional-', sInstance.notional.call().toNumber(), ' Long-',sInstance.long.call(),' Margin1-',sInstance.margin1.call().toNumber(),' Margin2-',sInstance.margin2.call().toNumber(),' StartDate-,web3..toAscii(sInstance.startDate.call()),' endDate-',web3..toAscii(sInstance.endDate.call()));
+             console.log('Notional-', sInstance.notional.call().toNumber(), ' Long-',sInstance.long.call(),' Long Margin-',sInstance.lmargin.call().toNumber(),' Short Margin-',sInstance.smargin.call().toNumber(),' StartDate-',web3.toAscii(sInstance.startDate.call()),' endDate-',web3.toAscii(sInstance.endDate.call()));
 
-            sContractInstance.EnterSwap(true{value:web3.toWei('100', 'ether') ,gas: 3000000});
+            To enter, do same steps as above, but delete your margin from the payloadData:
+            var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'EnterSwap' }), '');
+            var payloadData = solidityFunction.toPayload([true,1, 10, true, web3.fromAscii("20170714"),web3.fromAscii("20170717")]).data;
 
             //Then calculate and Pay
-            sInstance.Caluclate({gas: 3000000});
-            sInstance.PaySwap({gas: 3000000});
-
+            var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'Calculate' }), '');
+            var payloadData = solidityFunction.toPayload(]).data;
+            var rawTx = {
+                nonce: nonceHex,
+                gasPrice: "0x04e3b29200", //this is a hack to get around issues on Ropsten via Infura
+                gasLimit: gasLimitHex,
+                to:contractAddress,
+                data: payloadData,
+                chainId:3
+            };
+            
+            var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'PaySwap' }), '');
+            var payloadData = solidityFunction.toPayload([]).data;
+            var rawTx = {
+                nonce: nonceHex,
+                gasPrice: "0x04e3b29200", //this is a hack to get around issues on Ropsten via Infura
+                gasLimit: gasLimitHex,
+                to:contractAddress,
+                data: payloadData,
+                chainId:3
+            };
 
 
 MyEther Wallet:
