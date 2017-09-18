@@ -6,6 +6,8 @@ Join us on our slack: https://deriveth.slack.com/
 
 Or Gitter: https://gitter.im/deriveth
 
+DDA website - www.decentralizedderivatives.org
+
 Ropsten:
 
       ETH/USD:0xce294442cdc07975fd46edfa93b1df1479d7312f
@@ -15,12 +17,12 @@ Ropsten:
 
 
 Oracle Methodology can be found at:  
-
+https://github.com/DecentralizedDerivatives/Oracles
 
 
 Documentation is noted in three ways:  From the Remix Solidity Browser,  From the Node.js commmand line, and from the MyEther wallet.  
 
-For a non-technical overview of the product, please see the Whitepaper: https://docs.wixstatic.com/ugd/cd991f_7d5a46584fb046618428465c02fde738.pdf 
+For a non-technical overview of the product, please see the Whitepaper: https://docs.wixstatic.com/ugd/cd991f_80ee35841dcd456cbd27fef09b5ec20d.pdf
 
 
 Remix:
