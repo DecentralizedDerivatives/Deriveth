@@ -35,6 +35,7 @@ Oracle d;
     
   }
 
+
   //this function is where you enter the details of your swap.  
   //The Eligble Contract Participant variable (ECP) verifies that the party self identifies as eligible to enter into a swap based upon their jurisdiction
   //Be sure to send your collateral (margin) while entering the details.
@@ -80,21 +81,21 @@ Oracle d;
 
   mapping(uint => uint) shares;
 //This function calculates the payout of the swap.  Note that the value of the underlying cannot reach zero, but get within .001 * the precision of the Oracle
-    function Caculate() onlyState(SwapState.started) returns (bool){
+    function Calculate() onlyState(SwapState.started) returns (bool){
     uint p1=div(mul(1000,RetrieveData(endDate)),RetrieveData(startDate));
         if (p1 == 1000){
             shares[1] = lmargin;
             shares[2] = smargin;
         }
           if (p1<1000){
-              if(mul(sub(1000,p1),1000000000000000000)>lmargin){shares[1] = 0; shares[2] =this.balance;}
+              if(mul(notional,mul(sub(1000,p1),1000000000000000))>lmargin){shares[1] = 0; shares[2] =this.balance;}
               else {shares[1] = mul(mul(sub(1000,p1),notional),div(1000000000000000000,1000));
               shares[2] = this.balance -  shares[1];
               }
           }
           
           else if (p1 > 1000){
-               if(mul(sub(p1,1000),1000000000000000000)>smargin){shares[2] = 0; shares[1] =this.balance;}
+               if(mul(notional,mul(sub(1000,p1),1000000000000000))>smargin){shares[2] = 0; shares[1] =this.balance;}
                else {shares[2] = mul(mul(sub(p1,1000),notional),div(1000000000000000000,1000));
                shares[1] = this.balance - shares[2];
                }
