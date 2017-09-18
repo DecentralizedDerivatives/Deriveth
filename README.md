@@ -84,8 +84,6 @@ To calculate/pay Swap:
 
 Node.js:
 
-             //Note this needs work
-
             const Web3 = require("web3");
             const fs = require('fs');
             const Tx = require('ethereumjs-tx')
