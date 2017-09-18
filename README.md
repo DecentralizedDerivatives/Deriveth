@@ -4,14 +4,8 @@ The following contracts and products are available on the Ropsten test network.
 
 Join us on our slack: https://deriveth.slack.com/
 
-Or on Gitter: https://gitter.im/deriveth
+Or Gitter: https://gitter.im/deriveth
 
-Open Deriveth Contract Factories:
-Mainnet:
-
-      ETH/USD:
-
-      BTC/USD:
 Ropsten:
 
       ETH/USD:0xce294442cdc07975fd46edfa93b1df1479d7312f
