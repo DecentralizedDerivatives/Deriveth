@@ -16,7 +16,7 @@ Ropsten:
 
       ETH/USD:
 
-      BTC/USD:0x3c9294d257c106a8b2eb3e3a2d9199b8cd78a9b7
+      BTC/USD:0x6acbc8b43b42df270ba54628bf609c6d750d5d42
 
 
 
@@ -149,9 +149,10 @@ Node.js:
             var nonceHex = web3.toHex(numbernon);
             var payloadData = solidityFunction.toPayload([true,1, 1, 10, true, web3.fromAscii("20170714"),web3.fromAscii("20170717")]).data;
             //gasPrice is a hack to get around issues on Ropsten via Infura
+            var gasPriceHex = web3.toHex(21000000000);
             var rawTx = {
                 nonce: nonceHex,
-                gasPrice: "0x04e3b29200", 
+                gasPrice: gasPriceHex, 
                 gasLimit: gasLimitHex,
                 to:contractAddress,
                 value: web3.toHex(web3.toWei('1', 'ether')),
@@ -183,10 +184,10 @@ Node.js:
 
             //Then calculate and Pay
             var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'Calculate' }), '');
-            var payloadData = solidityFunction.toPayload(]).data;
+            var payloadData = solidityFunction.toPayload([]).data;
             var rawTx = {
                 nonce: nonceHex,
-                gasPrice: "0x04e3b29200", //this is a hack to get around issues on Ropsten via Infura
+                gasPrice: gasPriceHex, //this is a hack to get around issues on Ropsten via Infura
                 gasLimit: gasLimitHex,
                 to:contractAddress,
                 data: payloadData,
@@ -197,7 +198,7 @@ Node.js:
             var payloadData = solidityFunction.toPayload([]).data;
             var rawTx = {
                 nonce: nonceHex,
-                gasPrice: "0x04e3b29200", //this is a hack to get around issues on Ropsten via Infura
+                gasPrice: gasPriceHex, //this is a hack to get around issues on Ropsten via Infura
                 gasLimit: gasLimitHex,
                 to:contractAddress,
                 data: payloadData,
