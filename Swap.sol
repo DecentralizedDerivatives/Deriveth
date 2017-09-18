@@ -95,7 +95,7 @@ Oracle d;
           }
           
           else if (p1 > 1000){
-               if(mul(notional,mul(sub(1000,p1),1000000000000000))>smargin){shares[2] = 0; shares[1] =this.balance;}
+               if(mul(notional,mul(sub(p1,1000),1000000000000000))>smargin){shares[2] = 0; shares[1] =this.balance;}
                else {shares[2] = mul(mul(sub(p1,1000),notional),div(1000000000000000000,1000));
                shares[1] = this.balance - shares[2];
                }
