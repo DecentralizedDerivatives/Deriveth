@@ -90,10 +90,10 @@ Node.js:
             var _ = require('lodash');
             var SolidityFunction = require('web3/lib/web3/function');
             var solidityFunction = new SolidityFunction('', _.find(abi, { name: 'createContract' }), '');
-            var account1= "0xE5078b80b08bD7036fc0f7973f667b6aa9B4ddBE";
-            var key1 = new Buffer('d941dcf24a8841fda45f3b0e52d2987a1f9131233caa3a0566b0c91910af85af', 'hex');
-            var account2 = "0x939DD3E2DE8f472573364B3df1337857E758d90D"
-            var key2 = new Buffer('f47e6311420a4fc5e900cb9aebec5387b7b56228bbeb887b7de424f8af9b1a74', 'hex');
+            var account1= "0xE5078b80b08bD7036fc0f7973f667b6aa.......";
+            var key1 = new Buffer('........................', 'hex');
+            var account2 = "0x939DD3E2DE8f472573364B3df1337857E7......"
+            var key2 = new Buffer('.....................................', 'hex');
 
             var gasLimitHex = web3.toHex(3000000);
 
