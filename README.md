@@ -25,6 +25,10 @@ Documentation is noted in three ways:  From the Remix Solidity Browser,  From th
 For a non-technical overview of the product, please see the Whitepaper: https://docs.wixstatic.com/ugd/cd991f_80ee35841dcd456cbd27fef09b5ec20d.pdf
 
 
+
+Documentation:
+
+
 Remix:
 Before you can use the Remix browser, you'll need to download metamask here: https://metamask.io/  
 
