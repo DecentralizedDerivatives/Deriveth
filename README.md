@@ -2,12 +2,11 @@
 Deriveth is a Customized Swap Contract based on the DDA Oracles.
 The following contracts and products are available for review and on the Ropsten test network.
 
+DDA website - www.decentralizedderivatives.org
 
 Join us on our slack: https://deriveth.slack.com/
 
 Or Gitter: https://gitter.im/deriveth
-
-DDA website - www.decentralizedderivatives.org
 
 Factory Contracts on Ropsten:
 
