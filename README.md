@@ -60,7 +60,7 @@ To create a swap
       Factory - AtAddress("0x...")
         Enter .01 as value
         · Click Factory.CreateContract
-        · Copy Returned Address (you're new Swap!)
+        · Copy Returned Address (your new Swap!)
 
 To enter in details of your purchased contract:
 
@@ -72,7 +72,7 @@ To enter in details of your purchased contract:
       · Swap.createContract (ECP,margin,margin2,notional,long,startDate,endDate,cancellable) - 
           (e.g. true,100, 100, 1000, true, 0x3230313730373230, 0x3230313730373237)
 
-      You're swap is now created!  Now you need a counterpary.  To incentivize counterparties, reduce Margin2 relative to margin
+      Your swap is now created!  Now you need a counterpary.  To incentivize counterparties, reduce Margin2 relative to margin
 
 To modify:
 
