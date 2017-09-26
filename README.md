@@ -22,8 +22,8 @@ Oracle Methodology can be found at:
 https://github.com/DecentralizedDerivatives/Oracles
 
      Oracle Test Values (this is BTC, but ETH is the same) 
-      "0x01","BTCUSD",1000
-      "0x02","BTCUSD",950
+      	"0x01","BTCUSD",1000
+      	"0x02","BTCUSD",950
 	"0x03","BTCUSD",800
 	"0x04","BTCUSD",1050
 	"0x05","BTCUSD",1200
