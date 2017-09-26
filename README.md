@@ -17,8 +17,16 @@ Factory Contracts on Ropsten:
 
 
 
+
 Oracle Methodology can be found at:  
 https://github.com/DecentralizedDerivatives/Oracles
+
+     Oracle Test Values (this is BTC, but ETH is the same) 
+      "0x01","BTCUSD",1000
+      "0x02","BTCUSD",950
+	"0x03","BTCUSD",800
+	"0x04","BTCUSD",1050
+	"0x05","BTCUSD",1200
 
 
 Documentation is noted in three ways:  From the Remix Solidity Browser,  From the Node.js commmand line, and from the MyEther wallet.  
@@ -28,7 +36,6 @@ For a non-technical overview of the product, please see the Whitepaper: https://
 
 
 .
-
 
 
 Documentation:
