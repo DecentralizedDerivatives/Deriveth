@@ -1,6 +1,6 @@
 pragma solidity ^0.4.16;
 
-//Swap functions library 
+//Swap functions library (looks like SafeMath now, but will grow)
 
 library Sf{
 
