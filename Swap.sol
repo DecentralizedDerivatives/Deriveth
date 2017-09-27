@@ -1,6 +1,7 @@
 pragma solidity ^0.4.13;
 
-import "../contracts/Oracle.sol";
+import "../Oracle.sol";
+import "../Sf.sol";
 
 //This is the swap contract itself
 contract Swap {
@@ -15,7 +16,8 @@ contract Swap {
   bytes32 public startDate;//Start Date of Swap - is the hex representation of the date variable in YYYYMMDD
   bytes32 public endDate;//End Date of Swap - is the hex representation of the date variable in YYYYMMDD
   address public creator;//The Factory it was created from
-  uint public cancel;//The cancel variable.  If 0, no parties want to cancel.   Once Swap is started, both parties can cancel.  If cancel =1, other party is trying to cancel
+  bool public cancel_long;//The cancel variable.  If 0, no parties want to cancel.   Once Swap is started, both parties can cancel.  If cancel =1, other party is trying to cancel
+  bool public cancel_short;
   address party;
   bool long;
 
@@ -26,7 +28,7 @@ modifier onlyState(SwapState expectedState) {require(expectedState == currentSta
 Oracle d;
 
   //this base function is run by the Factory
-  function Swap(address OAddress, address _cpty1, address _creator){
+  function Swap(address OAddress, address _cpty1, address _creator) public{
       d = Oracle(OAddress);
       oracleID = OAddress;
       creator = _creator;
@@ -39,19 +41,18 @@ Oracle d;
   //this function is where you enter the details of your swap.  
   //The Eligble Contract Participant variable (ECP) verifies that the party self identifies as eligible to enter into a swap based upon their jurisdiction
   //Be sure to send your collateral (margin) while entering the details.
-  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate) onlyState(SwapState.created) payable {
+  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate) public onlyState(SwapState.created) payable {
       require(ECP);
       require (msg.sender == party);
-      require(msg.value == mul(_margin,1000000000000000000));
-      cancel = 0;
+      require(msg.value == Sf.mul(_margin,1000000000000000000));
       notional = _notional;
       long = _long;
       if (long){long_party = msg.sender;
-        lmargin = mul(_margin,1000000000000000000);
-        smargin = mul(_margin2,1000000000000000000);}
+        lmargin = Sf.mul(_margin,1000000000000000000);
+        smargin = Sf.mul(_margin2,1000000000000000000);}
       else {short_party = msg.sender;
-        smargin = mul(_margin,1000000000000000000);
-        lmargin = mul(_margin2,1000000000000000000);
+        smargin = Sf.mul(_margin,1000000000000000000);
+        lmargin = Sf.mul(_margin2,1000000000000000000);
       }
       currentState = SwapState.open;
       endDate = _endDate;
@@ -61,8 +62,9 @@ Oracle d;
   //This function is for those entering the swap.  
   //Needing to enter the details of the swap a second time ensures that your counterparty cannot modify the terms right before you enter the swap. 
   //Note you do not need to enter your collateral as a variable, however it must be submitted with the contract
-  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate ) onlyState(SwapState.open) payable returns (bool) {
+  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate ) public onlyState(SwapState.open) payable returns (bool) {
       require(ECP);
+      require(_endDate > _startDate);
       require(_long == long && notional == _notional && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
       require(msg.value >= smargin);
@@ -81,46 +83,45 @@ Oracle d;
 
   mapping(uint => uint) shares;
 //This function calculates the payout of the swap.  Note that the value of the underlying cannot reach zero, but get within .001 * the precision of the Oracle
-    function Calculate() onlyState(SwapState.started) returns (bool){
-    uint p1=div(mul(1000,RetrieveData(endDate)),RetrieveData(startDate));
-        if (p1 == 1000){
+    function Calculate() public onlyState(SwapState.started){
+    uint p1=Sf.div(Sf.mul(1000,RetrieveData(endDate)),RetrieveData(startDate));
+    if (p1 == 1000){
             shares[1] = lmargin;
             shares[2] = smargin;
         }
-          if (p1<1000){
-              if(mul(notional,mul(sub(1000,p1),1000000000000000))>lmargin){shares[1] = 0; shares[2] =this.balance;}
-              else {shares[1] = mul(mul(sub(1000,p1),notional),div(1000000000000000000,1000));
+        else if (p1<1000){
+              if(Sf.mul(notional,Sf.mul(Sf.sub(1000,p1),1000000000000000))>lmargin){shares[1] = 0; shares[2] =this.balance;}
+              else {shares[1] = Sf.mul(Sf.mul(Sf.sub(1000,p1),notional),Sf.div(1000000000000000000,1000));
               shares[2] = this.balance -  shares[1];
               }
           }
           
-          else if (p1 > 1000){
-               if(mul(notional,mul(sub(p1,1000),1000000000000000))>smargin){shares[2] = 0; shares[1] =this.balance;}
-               else {shares[2] = mul(mul(sub(p1,1000),notional),div(1000000000000000000,1000));
+        else if (p1 > 1000){
+               if(Sf.mul(notional,Sf.mul(Sf.sub(p1,1000),1000000000000000))>smargin){shares[2] = 0; shares[1] =this.balance;}
+               else {shares[2] = Sf.mul(Sf.mul(Sf.sub(p1,1000),notional),Sf.div(1000000000000000000,1000));
                shares[1] = this.balance - shares[2];
                }
           }
+          
       currentState = SwapState.ready;
-    return true;
   }
   
 
 //Once calcualted, this function allows each party to withdraw their share of the collateral.
-  function PaySwap() onlyState(SwapState.ready) returns (bool){
+  function PaySwap() public onlyState(SwapState.ready){
   if (msg.sender == long_party && paid[long_party] == false){
-        paid[long_party] = true;long_party.send(shares[1]);
+        paid[long_party] = true;long_party.transfer(shares[1]);
     }
     else if (msg.sender == short_party && paid[short_party] == false){
-        paid[short_party] = true;short_party.send(shares[2]);
+        paid[short_party] = true;short_party.transfer(shares[2]);
     }
     if (paid[long_party] && paid[short_party]){currentState = SwapState.ended;}
-    return true;
   }
 
 //This function allows both parties to exit.  If only the creator has entered the swap, then the swap can be cancelled and the details modified
 //Once two parties enter the swap, the contract is null after cancelled
 
-  function Exit(){
+  function Exit() public {
     require(currentState != SwapState.ended);
     require(currentState != SwapState.created);
     if (currentState == SwapState.open){
@@ -129,23 +130,21 @@ Oracle d;
         smargin = 0;
         notional = 0;
         currentState = SwapState.created;
-        msg.sender.send(this.balance);
+        msg.sender.transfer(this.balance);
         }
     }
 
   else{
-    var c = msg.sender == long_party ? 1 : 0;
-    var f = msg.sender == short_party ? 2 : 0;
-    var e = cancel + c + f;
-    cancel = c + f;
-    if (e > 2){
+    if (msg.sender == long_party){cancel_long = true;}
+    if (msg.sender == short_party){cancel_short = true;}
+    if (cancel_long && cancel_short){
       if (msg.sender == short_party){ 
-        long_party.send(lmargin);
-        short_party.send(smargin);
+        long_party.transfer(lmargin);
+        short_party.transfer(smargin);
       }
       else if (msg.sender == long_party){ 
-        short_party.send(smargin);
-        long_party.send(lmargin);
+        short_party.transfer(smargin);
+        long_party.transfer(lmargin);
       }
 
     }
@@ -162,31 +161,6 @@ Oracle d;
     (doc.name,doc.value) = d.documentStructs(key);
     require(doc.value>0);
     return doc.value;
-  }
-  
-  
-    
-  function mul(uint256 a, uint256 b) internal returns (uint256) {
-    uint256 c = a * b;
-    assert(a == 0 || c / a == b);
-    return c;
-  }
+  } 
 
-  function div(uint256 a, uint256 b) internal returns (uint256) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
-    uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-    return c;
-  }
-
-  function sub(uint256 a, uint256 b) internal returns (uint256) {
-    assert(b <= a);
-    return a - b;
-  }
-
-  function add(uint256 a, uint256 b) internal returns (uint256) {
-    uint256 c = a + b;
-    assert(c >= a);
-    return c;
-  }
 }
