@@ -1,6 +1,7 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.16;
 
-import "../contracts/Swap.sol";
+import "../Swap.sol";
+import "../Sf.sol";
 
 //The Factory contract creates the individual swap contracts
 contract Factory {
@@ -12,25 +13,25 @@ contract Factory {
     modifier onlyOwner{require(msg.sender == creator); _;}
     event Print(address _name, address _value);
 
-    function Factory (address _oracleID){
+    function Factory (address _oracleID) public{
         creator = msg.sender;  
         oracleID = _oracleID;
         fee = 10000000000000000;
     }
     /*ie .01 ether = 1000 */
-    function setFee(uint _fee) onlyOwner{
-      fee = _fee *10000000000000;
+    function setFee(uint _fee) public onlyOwner{
+      fee = Sf.mul(_fee,10000000000000);
     }
 
     //This is the function participants will call.  Pay the fee, get returned your new swap address
-    function createContract () payable returns (address){
+    function createContract () public payable returns (address){
         require(msg.value >= fee);
         address newContract = new Swap(oracleID,msg.sender,creator);
         newContracts.push(newContract);
         Print(msg.sender,newContract); //This is an event and allows DDA/ participants to see when new contracts are pushed.
         return newContract;
     } 
-    function withdrawFee() onlyOwner {
+    function withdrawFee() public onlyOwner {
         creator.transfer(this.balance);
     }
 }
