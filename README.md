@@ -10,9 +10,10 @@ Or Gitter: https://gitter.im/deriveth
 
 Factory Contracts on Ropsten:
 
-      ETH/USD:0xce294442cdc07975fd46edfa93b1df1479d7312f
+      ETH/USD:0x222be967c2265ab0981c1686665facfe39b54f88
 
-      BTC/USD:0x6acbc8b43b42df270ba54628bf609c6d750d5d42
+      BTC/USD:0x0dfdba3300d42f929ef83a996ae085f258754b44
+
 
 
 
