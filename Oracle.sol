@@ -1,5 +1,4 @@
-pragma solidity ^0.4.13;
-
+pragma solidity ^0.4.16;
 
 //The oracle contract.  Detailed methodology on the Oracle can be found at Github.com/DecentralizedDerivatives/Oracles
 //The Oracle is a database with price of the underlying by date (key)
@@ -10,27 +9,16 @@ contract Oracle{
     struct DocumentStruct{bytes32 name; uint value;}
     mapping(bytes32 => DocumentStruct) public documentStructs;
     
-    function Oracle(){
+    function Oracle() public{
         owner = msg.sender;
     }
-    function StoreDocument(bytes32 key,bytes32 name, uint value) onlyOwner returns (bool success) {
+    function StoreDocument(bytes32 key,bytes32 name, uint value) public onlyOwner{
         documentStructs[key].value = value;
         documentStructs[key].name = name;
         Print(bytes32ToString(name),value);
-        return true;
     }
-    
-
-    function RetrieveData(bytes32 key) public constant returns(uint) {
-        uint d = documentStructs[key].value;
-        return d;
-    }
-      function RetrieveName(bytes32 key) public constant returns(string) {
-        bytes32 d = documentStructs[key].name;
-        return bytes32ToString(d);
-    }
-    
-    function bytes32ToString(bytes32 x) constant returns (string) {
+        
+    function bytes32ToString(bytes32 x) public returns (string) {
     bytes memory bytesString = new bytes(32);
     uint charCount = 0;
     for (uint j = 0; j < 32; j++) {
