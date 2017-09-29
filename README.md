@@ -50,7 +50,7 @@ Once you have metamask with Ether, go to the remix browser at:https://ethereum.g
 
 Paste the following into the code field (delete everything else):
       
-      pragma solidity ^0.4.13;
+      pragma solidity ^0.4.16;
       import "https://github.com/DecentralizedDerivates/Deriveth/Factory.sol";
 
 Now follow the instructions for each part:
