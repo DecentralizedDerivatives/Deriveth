@@ -1,7 +1,7 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.16;
 
-import "../Oracle.sol";
-import "../Sf.sol";
+ import "https://github.com/DecentralizedDerivatives/Deriveth/Oracle.sol";
+ import "https://github.com/DecentralizedDerivatives/Deriveth/Sf.sol";
 
 //This is the swap contract itself
 contract Swap {
