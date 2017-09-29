@@ -1,7 +1,7 @@
 pragma solidity ^0.4.16;
 
-import "../Deriveth/Swap.sol";
-import "../Deriveth/Sf.sol";
+import "https://github.com/DecentralizedDerivatives/Deriveth/Swap.sol";
+import "https://github.com/DecentralizedDerivatives/Deriveth/Sf.sol";
 
 //The Factory contract creates the individual swap contracts
 contract Factory {
