@@ -2,7 +2,6 @@ pragma solidity ^0.4.16;
 
  import "https://github.com/DecentralizedDerivatives/Deriveth/Oracle.sol";
  import "https://github.com/DecentralizedDerivatives/Deriveth/Sf.sol";
-
 //This is the swap contract itself
 contract Swap {
   enum SwapState {created,open,started,ready,ended}
@@ -18,9 +17,13 @@ contract Swap {
   address public creator;//The Factory it was created from
   bool public cancel_long;//The cancel variable.  If 0, no parties want to cancel.   Once Swap is started, both parties can cancel.  If cancel =1, other party is trying to cancel
   bool public cancel_short;
+  bool public paid_short;
+  bool public paid_long;
+  uint public share_long;
+  uint public share_short;
   address party;
   bool long;
-
+  struct DocumentStruct{bytes32 name; uint value;}
   mapping(address => uint256) balances;
 
 modifier onlyState(SwapState expectedState) {require(expectedState == currentState);_;}
@@ -45,6 +48,7 @@ Oracle d;
       require(ECP);
       require (msg.sender == party);
       require(msg.value == Sf.mul(_margin,1000000000000000000));
+      require(_endDate > _startDate);
       notional = _notional;
       long = _long;
       if (long){long_party = msg.sender;
@@ -58,14 +62,13 @@ Oracle d;
       endDate = _endDate;
       startDate = _startDate;
   }
-  mapping(address => bool) paid;
+
   //This function is for those entering the swap.  
   //Needing to enter the details of the swap a second time ensures that your counterparty cannot modify the terms right before you enter the swap. 
   //Note you do not need to enter your collateral as a variable, however it must be submitted with the contract
   function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate ) public onlyState(SwapState.open) payable returns (bool) {
       require(ECP);
-      require(_endDate > _startDate);
-      require(_long == long && notional == _notional && _startDate == startDate && _endDate == endDate);
+      require(_long != long && notional == _notional && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
       require(msg.value >= smargin);
       require(lmargin >= _margin);
@@ -75,31 +78,28 @@ Oracle d;
       require (smargin >= _margin);
       }
       currentState = SwapState.started;
-      paid[long_party] = false;
-      paid[short_party] = false;
       return true;
   }
   
 
-  mapping(uint => uint) shares;
 //This function calculates the payout of the swap.  Note that the value of the underlying cannot reach zero, but get within .001 * the precision of the Oracle
     function Calculate() public onlyState(SwapState.started){
     uint p1=Sf.div(Sf.mul(1000,RetrieveData(endDate)),RetrieveData(startDate));
     if (p1 == 1000){
-            shares[1] = lmargin;
-            shares[2] = smargin;
+            share_long = lmargin;
+            share_short = smargin;
         }
         else if (p1<1000){
-              if(Sf.mul(notional,Sf.mul(Sf.sub(1000,p1),1000000000000000))>lmargin){shares[1] = 0; shares[2] =this.balance;}
-              else {shares[1] = Sf.mul(Sf.mul(Sf.sub(1000,p1),notional),Sf.div(1000000000000000000,1000));
-              shares[2] = this.balance -  shares[1];
+              if(Sf.mul(notional,Sf.mul(Sf.sub(1000,p1),1000000000000000))>lmargin){share_long = 0; share_short =this.balance;}
+              else {share_long = Sf.mul(Sf.mul(Sf.sub(1000,p1),notional),Sf.div(1000000000000000000,1000));
+              share_short = this.balance -  share_long;
               }
           }
           
         else if (p1 > 1000){
-               if(Sf.mul(notional,Sf.mul(Sf.sub(p1,1000),1000000000000000))>smargin){shares[2] = 0; shares[1] =this.balance;}
-               else {shares[2] = Sf.mul(Sf.mul(Sf.sub(p1,1000),notional),Sf.div(1000000000000000000,1000));
-               shares[1] = this.balance - shares[2];
+               if(Sf.mul(notional,Sf.mul(Sf.sub(p1,1000),1000000000000000))>smargin){share_short = 0; share_long =this.balance;}
+               else {share_short = Sf.mul(Sf.mul(Sf.sub(p1,1000),notional),Sf.div(1000000000000000000,1000));
+               share_long = this.balance - share_short;
                }
           }
           
@@ -109,13 +109,17 @@ Oracle d;
 
 //Once calcualted, this function allows each party to withdraw their share of the collateral.
   function PaySwap() public onlyState(SwapState.ready){
-  if (msg.sender == long_party && paid[long_party] == false){
-        paid[long_party] = true;long_party.transfer(shares[1]);
+  if (msg.sender == long_party && paid_long == false){
+        paid_long = true;
+        long_party.transfer(share_long);
+        cancel_long = false;
     }
-    else if (msg.sender == short_party && paid[short_party] == false){
-        paid[short_party] = true;short_party.transfer(shares[2]);
+    else if (msg.sender == short_party && paid_short == false){
+        paid_short = true;
+        short_party.transfer(share_short);
+        cancel_short = false;
     }
-    if (paid[long_party] && paid[short_party]){currentState = SwapState.ended;}
+    if (paid_long && paid_short){currentState = SwapState.ended;}
   }
 
 //This function allows both parties to exit.  If only the creator has entered the swap, then the swap can be cancelled and the details modified
@@ -124,36 +128,29 @@ Oracle d;
   function Exit() public {
     require(currentState != SwapState.ended);
     require(currentState != SwapState.created);
-    if (currentState == SwapState.open){
-    if (msg.sender == party) {
+    if (currentState == SwapState.open && msg.sender == party) {
         lmargin = 0;
         smargin = 0;
         notional = 0;
+        long = false;
+        startDate =  '';
+        endDate =  '';
+        short_party = 0;
+        long_party = 0;
         currentState = SwapState.created;
         msg.sender.transfer(this.balance);
-        }
     }
 
   else{
-    if (msg.sender == long_party){cancel_long = true;}
-    if (msg.sender == short_party){cancel_short = true;}
+    if (msg.sender == long_party && paid_long == false){cancel_long = true;}
+    if (msg.sender == short_party && paid_short == false){cancel_short = true;}
     if (cancel_long && cancel_short){
-      if (msg.sender == short_party){ 
-        long_party.transfer(lmargin);
-        short_party.transfer(smargin);
-      }
-      else if (msg.sender == long_party){ 
         short_party.transfer(smargin);
         long_party.transfer(lmargin);
+        currentState = SwapState.ended;
       }
-
     }
   }
-
-}
-
-
-  struct DocumentStruct{bytes32 name; uint value;}
 
 //If you want to check if the Calculate function can be run, enter the hex of the date in the RetrieveData field and see if it returns a non-zero value
   function RetrieveData(bytes32 key) public constant returns(uint) {
