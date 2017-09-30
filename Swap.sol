@@ -2,6 +2,7 @@ pragma solidity ^0.4.16;
 
  import "https://github.com/DecentralizedDerivatives/Deriveth/Oracle.sol";
  import "https://github.com/DecentralizedDerivatives/Deriveth/Sf.sol";
+ 
 //This is the swap contract itself
 contract Swap {
   enum SwapState {created,open,started,ready,ended}
