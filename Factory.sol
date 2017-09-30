@@ -12,6 +12,7 @@ contract Factory {
 
     modifier onlyOwner{require(msg.sender == creator); _;}
     event Print(address _name, address _value);
+    event FeeChange(uint _newValue);
 
     function Factory (address _oracleID) public{
         creator = msg.sender;  
@@ -21,11 +22,12 @@ contract Factory {
     /*ie .01 ether = 1000 */
     function setFee(uint _fee) public onlyOwner{
       fee = Sf.mul(_fee,10000000000000);
+      FeeChange(fee);
     }
 
     //This is the function participants will call.  Pay the fee, get returned your new swap address
     function createContract () public payable returns (address){
-        require(msg.value >= fee);
+        require(msg.value == fee);
         address newContract = new Swap(oracleID,msg.sender,creator);
         newContracts.push(newContract);
         Print(msg.sender,newContract); //This is an event and allows DDA/ participants to see when new contracts are pushed.
