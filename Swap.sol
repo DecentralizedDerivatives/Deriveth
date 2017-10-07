@@ -3,6 +3,7 @@ pragma solidity ^0.4.16;
  import "https://github.com/DecentralizedDerivatives/Deriveth/Oracle.sol";
  import "https://github.com/DecentralizedDerivatives/Deriveth/Sf.sol";
  
+
 //This is the swap contract itself
 contract Swap {
   enum SwapState {created,open,started,ready,ended}
@@ -22,6 +23,8 @@ contract Swap {
   bool public paid_long;
   uint public share_long;
   uint public share_short;
+  uint public l_premium;/* in finney 1/1000 of eth*/
+  uint public s_premium;/* in finney 1/1000 of eth*/
   address party;
   bool long;
   struct DocumentStruct{bytes32 name; uint value;}
@@ -45,19 +48,24 @@ Oracle d;
   //this function is where you enter the details of your swap.  
   //The Eligble Contract Participant variable (ECP) verifies that the party self identifies as eligible to enter into a swap based upon their jurisdiction
   //Be sure to send your collateral (margin) while entering the details.
-  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate) public onlyState(SwapState.created) payable {
+  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate, uint256 _l_premium, uint256 _s_premium) public onlyState(SwapState.created) payable {
       require(ECP);
       require (msg.sender == party);
-      require(msg.value == Sf.mul(_margin,1000000000000000000));
       require(_endDate > _startDate);
       notional = _notional;
       long = _long;
+      l_premium = Sf.mul(_l_premium,1000000000000000);
+      s_premium = Sf.mul(_s_premium,1000000000000000);
       if (long){long_party = msg.sender;
         lmargin = Sf.mul(_margin,1000000000000000000);
-        smargin = Sf.mul(_margin2,1000000000000000000);}
+        smargin = Sf.mul(_margin2,1000000000000000000);
+        require(msg.value == Sf.add(l_premium,lmargin));
+      }
+
       else {short_party = msg.sender;
         smargin = Sf.mul(_margin,1000000000000000000);
         lmargin = Sf.mul(_margin2,1000000000000000000);
+        require(msg.value == Sf.add(s_premium,smargin));
       }
       currentState = SwapState.open;
       endDate = _endDate;
@@ -67,16 +75,16 @@ Oracle d;
   //This function is for those entering the swap.  
   //Needing to enter the details of the swap a second time ensures that your counterparty cannot modify the terms right before you enter the swap. 
   //Note you do not need to enter your collateral as a variable, however it must be submitted with the contract
-  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate ) public onlyState(SwapState.open) payable returns (bool) {
+  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate, uint256 _l_premium, uint256 _s_premium) public onlyState(SwapState.open) payable returns (bool) {
       require(ECP);
       require(_long != long && notional == _notional && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
-      require(msg.value >= smargin);
-      require(lmargin >= _margin);
+      require(msg.value >= s_premium + smargin);
+      require(lmargin + l_premium >= Sf.add(Sf.mul(_l_premium,1000000000000000),Sf.mul(_margin,1000000000000000000)));
       }
       else {long_party = msg.sender;
-      require(msg.value >=lmargin);
-      require (smargin >= _margin);
+      require(msg.value >= l_premium + lmargin);
+      require (smargin + s_premium >= Sf.add(Sf.mul(_s_premium,1000000000000000),Sf.mul(_margin,1000000000000000000)));
       }
       currentState = SwapState.started;
       return true;
@@ -91,15 +99,15 @@ Oracle d;
             share_short = smargin;
         }
         else if (p1<1000){
-              if(Sf.mul(notional,Sf.mul(Sf.sub(1000,p1),1000000000000000))>lmargin){share_long = 0; share_short =this.balance;}
-              else {share_long = Sf.mul(Sf.mul(Sf.sub(1000,p1),notional),Sf.div(1000000000000000000,1000));
+              if(Sf.mul(notional,Sf.mul(Sf.sub(1000,p1),1000000000000000))>lmargin){share_long = s_premium; share_short =this.balance - s_premium;}
+              else {share_long = s_premium + Sf.mul(Sf.mul(Sf.sub(1000,p1),notional),Sf.div(1000000000000000000,1000));
               share_short = this.balance -  share_long;
               }
           }
           
         else if (p1 > 1000){
-               if(Sf.mul(notional,Sf.mul(Sf.sub(p1,1000),1000000000000000))>smargin){share_short = 0; share_long =this.balance;}
-               else {share_short = Sf.mul(Sf.mul(Sf.sub(p1,1000),notional),Sf.div(1000000000000000000,1000));
+               if(Sf.mul(notional,Sf.mul(Sf.sub(p1,1000),1000000000000000))>smargin){share_short = l_premium; share_long =this.balance - l_premium;}
+               else {share_short = l_premium + Sf.mul(Sf.mul(Sf.sub(p1,1000),notional),Sf.div(1000000000000000000,1000));
                share_long = this.balance - share_short;
                }
           }
@@ -138,6 +146,8 @@ Oracle d;
         endDate =  '';
         short_party = 0;
         long_party = 0;
+        s_premium = 0;
+        l_premium = 0;
         currentState = SwapState.created;
         msg.sender.transfer(this.balance);
     }
@@ -146,8 +156,8 @@ Oracle d;
     if (msg.sender == long_party && paid_long == false){cancel_long = true;}
     if (msg.sender == short_party && paid_short == false){cancel_short = true;}
     if (cancel_long && cancel_short){
-        short_party.transfer(smargin);
-        long_party.transfer(lmargin);
+        short_party.transfer(smargin + s_premium);
+        long_party.transfer(lmargin + l_premium);
         currentState = SwapState.ended;
       }
     }
