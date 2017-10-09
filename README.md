@@ -10,9 +10,9 @@ Or Gitter: https://gitter.im/deriveth
 
 Factory Contracts on Ropsten:
 
-      ETH/USD:0x5b08ea8fff5d2e5d31c4b2f0069fae6430045edc
+      ETH/USD:0x4870a9da5999209e03a70f48ec4eca924d3f6fe2
 
-      BTC/USD:0x8ee64570c26fb2f968a0ad4e16e5a560631021f1
+      BTC/USD:0xa9f6eabcc9da75ac320946506b98ca6bf76ce459
 
 
 Oracle Methodology can be found at:  
