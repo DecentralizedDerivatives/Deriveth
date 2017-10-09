@@ -3,7 +3,6 @@ pragma solidity ^0.4.16;
  import "https://github.com/DecentralizedDerivatives/Deriveth/Oracle.sol";
  import "https://github.com/DecentralizedDerivatives/Deriveth/Sf.sol";
  
-
 //This is the swap contract itself
 contract Swap {
   enum SwapState {created,open,started,ready,ended}
@@ -52,7 +51,7 @@ Oracle d;
       require(ECP);
       require (msg.sender == party);
       require(_endDate > _startDate);
-      notional = _notional;
+      notional = Sf.mul(_notional,1000000000000000000);
       long = _long;
       l_premium = Sf.mul(_l_premium,1000000000000000);
       s_premium = Sf.mul(_s_premium,1000000000000000);
@@ -77,7 +76,7 @@ Oracle d;
   //Note you do not need to enter your collateral as a variable, however it must be submitted with the contract
   function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate, uint256 _l_premium, uint256 _s_premium) public onlyState(SwapState.open) payable returns (bool) {
       require(ECP);
-      require(_long != long && notional == _notional && _startDate == startDate && _endDate == endDate);
+      require(_long != long && notional == Sf.mul(_notional,1000000000000000000) && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
       require(msg.value >= s_premium + smargin);
       require(lmargin + l_premium >= Sf.add(Sf.mul(_l_premium,1000000000000000),Sf.mul(_margin,1000000000000000000)));
@@ -99,16 +98,18 @@ Oracle d;
             share_short = smargin;
         }
         else if (p1<1000){
-              if(Sf.mul(notional,Sf.mul(Sf.sub(1000,p1),1000000000000000))>lmargin){share_long = s_premium; share_short =this.balance - s_premium;}
-              else {share_long = s_premium + Sf.mul(Sf.mul(Sf.sub(1000,p1),notional),Sf.div(1000000000000000000,1000));
-              share_short = this.balance -  share_long;
+              if(Sf.div(Sf.mul(notional,Sf.sub(1000,p1)),1000)>lmargin){share_long = s_premium; share_short =this.balance - s_premium;}
+              else {
+                share_short = Sf.add(Sf.add(l_premium,smargin),Sf.div(Sf.mul(Sf.sub(1000,p1),notional),1000));
+                share_long = this.balance -  share_short;
               }
           }
           
         else if (p1 > 1000){
-               if(Sf.mul(notional,Sf.mul(Sf.sub(p1,1000),1000000000000000))>smargin){share_short = l_premium; share_long =this.balance - l_premium;}
-               else {share_short = l_premium + Sf.mul(Sf.mul(Sf.sub(p1,1000),notional),Sf.div(1000000000000000000,1000));
-               share_long = this.balance - share_short;
+               if(Sf.div(Sf.mul(notional,Sf.sub(p1,1000)),1000)>smargin){share_short = l_premium; share_long =this.balance - l_premium;}
+               else {
+                  share_long = Sf.add(Sf.add(s_premium,lmargin),Sf.div(Sf.mul(Sf.sub(p1,1000),notional),1000));
+                  share_short = this.balance - share_long;
                }
           }
           
