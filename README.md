@@ -25,4 +25,6 @@ For a non-technical overview of the product, please see the Whitepaper: https://
 Documentation: 
 https://github.com/DecentralizedDerivatives/Deriveth/wiki/Documentation
 
+or watch the video on how to create a swap using Remix and Metamask: https://www.youtube.com/watch?v=jZf2oWrkaxs&feature=youtu.be
+
 
