@@ -1,9 +1,7 @@
-pragma solidity ^0.4.16;
+pragma solidity ^0.4.17;
 
 import "https://github.com/DecentralizedDerivatives/Deriveth/Swap.sol";
-import "https://github.com/DecentralizedDerivatives/Deriveth/Sf.sol";
 
-//The Factory contract creates the individual swap contracts
 contract Factory {
     address[] public newContracts;
     address public creator;
@@ -14,14 +12,14 @@ contract Factory {
     event Print(address _name, address _value);
     event FeeChange(uint _newValue);
 
-    function Factory (address _oracleID) public{
+    function Factory (address _oracleID, uint _fee) public{
         creator = msg.sender;  
         oracleID = _oracleID;
-        fee = 10000000000000000;
+        fee = _fee;
     }
-    /*ie .01 ether = 1000 */
+
     function setFee(uint _fee) public onlyOwner{
-      fee = Sf.mul(_fee,10000000000000);
+      fee = _fee;
       FeeChange(fee);
     }
 
@@ -37,3 +35,4 @@ contract Factory {
         creator.transfer(this.balance);
     }
 }
+
