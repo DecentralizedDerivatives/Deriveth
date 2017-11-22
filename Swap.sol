@@ -5,6 +5,8 @@ pragma solidity ^0.4.16;
  
 //This is the swap contract itself
 contract Swap {
+
+  using SafeMath for uint256;
   enum SwapState {created,open,started,ready,ended}
   SwapState public currentState; //state of the swap, open can be entered by opposing party
   address public long_party;//Party going long the rate
@@ -13,8 +15,8 @@ contract Swap {
   uint public lmargin;//The amount the long party puts as collateral (max he can lose, most short party can gain)
   uint public smargin;//The amount the short party puts as collateral (max he can lose, most long party can gain)
   address public oracleID;//The Oracle address (check for list at www.github.com/DecentralizedDerivatives/Oracles)
-  bytes32 public startDate;//Start Date of Swap - is the hex representation of the date variable in YYYYMMDD
-  bytes32 public endDate;//End Date of Swap - is the hex representation of the date variable in YYYYMMDD
+  uint public startDate;//Start Date of Swap - is the hex representation of the date variable in YYYYMMDD
+  uint public endDate;//End Date of Swap - is the hex representation of the date variable in YYYYMMDD
   address public creator;//The Factory it was created from
   bool public cancel_long;//The cancel variable.  If 0, no parties want to cancel.   Once Swap is started, both parties can cancel.  If cancel =1, other party is trying to cancel
   bool public cancel_short;
@@ -31,12 +33,12 @@ contract Swap {
 
 modifier onlyState(SwapState expectedState) {require(expectedState == currentState);_;}
 
-Oracle d;
+Oracle oracle;
 
   //this base function is run by the Factory
-  function Swap(address OAddress, address _cpty1, address _creator) public{
-      d = Oracle(OAddress);
-      oracleID = OAddress;
+  function Swap(address _oracleID, address _cpty1, address _creator) public{
+      oracle = Oracle(_oracleID);
+      oracleID = _oracleID;
       creator = _creator;
       party = _cpty1;
       currentState = SwapState.created;
@@ -47,24 +49,24 @@ Oracle d;
   //this function is where you enter the details of your swap.  
   //The Eligble Contract Participant variable (ECP) verifies that the party self identifies as eligible to enter into a swap based upon their jurisdiction
   //Be sure to send your collateral (margin) while entering the details.
-  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate, uint256 _l_premium, uint256 _s_premium) public onlyState(SwapState.created) payable {
+  function CreateSwap(bool ECP, uint _margin, uint _margin2, uint _notional, bool _long, uint _startDate, uint _endDate, uint256 _l_premium, uint256 _s_premium) public onlyState(SwapState.created) payable {
       require(ECP);
       require (msg.sender == party);
       require(_endDate > _startDate);
-      notional = Sf.mul(_notional,1000000000000000000);
+      notional = _notional.mul(1000000000000000000);
       long = _long;
-      l_premium = Sf.mul(_l_premium,1000000000000000);
-      s_premium = Sf.mul(_s_premium,1000000000000000);
+      l_premium = _l_premium.mul(1000000000000000);
+      s_premium = _s_premium.mul(1000000000000000);
       if (long){long_party = msg.sender;
-        lmargin = Sf.mul(_margin,1000000000000000000);
-        smargin = Sf.mul(_margin2,1000000000000000000);
-        require(msg.value == Sf.add(l_premium,lmargin));
+        lmargin = _margin.mul(1000000000000000000);
+        smargin = _margin2.mul(1000000000000000000);
+        require(msg.value == l_premium.add(lmargin));
       }
 
       else {short_party = msg.sender;
-        smargin = Sf.mul(_margin,1000000000000000000);
-        lmargin = Sf.mul(_margin2,1000000000000000000);
-        require(msg.value == Sf.add(s_premium,smargin));
+        smargin = _margin.mul(1000000000000000000);
+        lmargin = _margin2.mul(1000000000000000000);
+        require(msg.value == s_premium.add(smargin));
       }
       currentState = SwapState.open;
       endDate = _endDate;
@@ -74,16 +76,16 @@ Oracle d;
   //This function is for those entering the swap.  
   //Needing to enter the details of the swap a second time ensures that your counterparty cannot modify the terms right before you enter the swap. 
   //Note you do not need to enter your collateral as a variable, however it must be submitted with the contract
-  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, bytes32 _startDate, bytes32 _endDate, uint256 _l_premium, uint256 _s_premium) public onlyState(SwapState.open) payable returns (bool) {
+  function EnterSwap(bool ECP, uint _margin, uint _notional, bool _long, uint _startDate, uint _endDate, uint256 _l_premium, uint256 _s_premium) public onlyState(SwapState.open) payable returns (bool) {
       require(ECP);
-      require(_long != long && notional == Sf.mul(_notional,1000000000000000000) && _startDate == startDate && _endDate == endDate);
+      require(_long != long && notional == _notional.mul(1000000000000000000) && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
       require(msg.value >= s_premium + smargin);
-      require(lmargin + l_premium >= Sf.add(Sf.mul(_l_premium,1000000000000000),Sf.mul(_margin,1000000000000000000)));
+      require(lmargin + l_premium >= _l_premium.mul(1000000000000000).add(_margin.mul(1000000000000000000)));
       }
       else {long_party = msg.sender;
       require(msg.value >= l_premium + lmargin);
-      require (smargin + s_premium >= Sf.add(Sf.mul(_s_premium,1000000000000000),Sf.mul(_margin,1000000000000000000)));
+      require (smargin + s_premium >= _s_premium.mul(1000000000000000).add(_margin.mul(1000000000000000000)));
       }
       currentState = SwapState.started;
       return true;
@@ -92,23 +94,23 @@ Oracle d;
 
 //This function calculates the payout of the swap.  Note that the value of the underlying cannot reach zero, but get within .001 * the precision of the Oracle
     function Calculate() public onlyState(SwapState.started){
-    uint p1=Sf.div(Sf.mul(1000,RetrieveData(endDate)),RetrieveData(startDate));
+    uint p1= RetrieveData(endDate).mul(1000).div(RetrieveData(startDate));
     if (p1 == 1000){
             share_long = lmargin;
             share_short = smargin;
         }
         else if (p1<1000){
-              if(Sf.div(Sf.mul(notional,Sf.sub(1000,p1)),1000)>lmargin){share_long = s_premium; share_short =this.balance - s_premium;}
+              if(notional.mul(1000 - p1).div(1000)>lmargin){share_long = s_premium; share_short =this.balance - s_premium;}
               else {
-                share_short = Sf.add(Sf.add(l_premium,smargin),Sf.div(Sf.mul(Sf.sub(1000,p1),notional),1000));
+                share_short = l_premium.add(smargin).add(((1000 - p1)).mul(notional).div(1000));
                 share_long = this.balance -  share_short;
               }
           }
           
         else if (p1 > 1000){
-               if(Sf.div(Sf.mul(notional,Sf.sub(p1,1000)),1000)>smargin){share_short = l_premium; share_long =this.balance - l_premium;}
+               if(notional.mul(p1-1000).div(1000) > smargin){share_short = l_premium; share_long =this.balance - l_premium;}
                else {
-                  share_long = Sf.add(Sf.add(s_premium,lmargin),Sf.div(Sf.mul(Sf.sub(p1,1000),notional),1000));
+                  share_long = s_premium.add(lmargin).add((p1 - 1000).mul(notional).div(1000));
                   share_short = this.balance - share_long;
                }
           }
@@ -139,16 +141,16 @@ Oracle d;
     require(currentState != SwapState.ended);
     require(currentState != SwapState.created);
     if (currentState == SwapState.open && msg.sender == party) {
-        lmargin = 0;
-        smargin = 0;
-        notional = 0;
-        long = false;
-        startDate =  '';
-        endDate =  '';
-        short_party = 0;
-        long_party = 0;
-        s_premium = 0;
-        l_premium = 0;
+        delete lmargin;
+        delete smargin;
+        delete notional;
+        delete long;
+        delete startDate;
+        delete endDate;
+        delete short_party;
+        delete long_party;
+        delete s_premium;
+        delete l_premium;
         currentState = SwapState.created;
         msg.sender.transfer(this.balance);
     }
@@ -165,11 +167,9 @@ Oracle d;
   }
 
 //If you want to check if the Calculate function can be run, enter the hex of the date in the RetrieveData field and see if it returns a non-zero value
-  function RetrieveData(bytes32 key) public constant returns(uint) {
-    DocumentStruct memory doc;
-    (doc.name,doc.value) = d.documentStructs(key);
-    require(doc.value>0);
-    return doc.value;
-  } 
+  function RetrieveData(uint _date) public constant returns (uint data) {
+    uint value = oracle.oracle_values(_date);
+    return value;
+  }
 
 }
