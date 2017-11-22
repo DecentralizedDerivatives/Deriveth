@@ -24,8 +24,8 @@ contract Swap {
   bool public paid_long;
   uint public share_long;
   uint public share_short;
-  uint public l_premium;/* in finney 1/1000 of eth*/
-  uint public s_premium;/* in finney 1/1000 of eth*/
+  uint public l_premium;/* in wei*/
+  uint public s_premium;/* in wei*/
   address party;
   bool long;
   struct DocumentStruct{bytes32 name; uint value;}
@@ -55,8 +55,8 @@ Oracle oracle;
       require(_endDate > _startDate);
       notional = _notional.mul(1000000000000000000);
       long = _long;
-      l_premium = _l_premium.mul(1000000000000000);
-      s_premium = _s_premium.mul(1000000000000000);
+      l_premium = _l_premium;
+      s_premium = _s_premium;
       if (long){long_party = msg.sender;
         lmargin = _margin.mul(1000000000000000000);
         smargin = _margin2.mul(1000000000000000000);
@@ -81,11 +81,11 @@ Oracle oracle;
       require(_long != long && notional == _notional.mul(1000000000000000000) && _startDate == startDate && _endDate == endDate);
       if (long) {short_party = msg.sender;
       require(msg.value >= s_premium + smargin);
-      require(lmargin + l_premium >= _l_premium.mul(1000000000000000).add(_margin.mul(1000000000000000000)));
+      require(lmargin + l_premium >= _l_premium.add(_margin.mul(1000000000000000000)));
       }
       else {long_party = msg.sender;
       require(msg.value >= l_premium + lmargin);
-      require (smargin + s_premium >= _s_premium.mul(1000000000000000).add(_margin.mul(1000000000000000000)));
+      require (smargin + s_premium >= _s_premium.add(_margin.mul(1000000000000000000)));
       }
       currentState = SwapState.started;
       return true;
