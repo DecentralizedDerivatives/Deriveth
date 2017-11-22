@@ -1,6 +1,6 @@
 pragma solidity ^0.4.16;
 
- import "https://github.com/DecentralizedDerivatives/Deriveth/Oracle.sol";
+ import "https://github.com/DecentralizedDerivatives/Oracles/Oracle.sol";
  import "https://github.com/DecentralizedDerivatives/Deriveth/SafeMath.sol";
  
 //This is the swap contract itself
